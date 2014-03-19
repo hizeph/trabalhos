@@ -10,10 +10,12 @@
  */
 import java.net.Socket;
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.io.FileInputStream;
+
 
 public class Server {
 
@@ -21,8 +23,9 @@ public class Server {
     private Socket socket;
     private BufferedInputStream buffIn;
     private ObjectOutputStream objOut;
+    private BufferedOutputStream buffOut;
     private final int MAX_SIZE_IN = 512;
-    private final int MAX_SIZE_OUT = 4096;
+    private final int MAX_SIZE_OUT = 8338608;
     private byte[] input, output;
     private FileInputStream music;
 
@@ -33,31 +36,43 @@ public class Server {
     public void run() throws IOException{
         input = new byte[MAX_SIZE_IN];
         output = new byte[MAX_SIZE_OUT];
-        String request;
+        String request, answer;
+        byte[] size = new byte[8];
         int nBytes;
-        while(true){
+        //while(true){
             
             socket = serverSocket.accept();
             buffIn = new BufferedInputStream(socket.getInputStream());
             objOut = new ObjectOutputStream(socket.getOutputStream());
+            buffOut = new BufferedOutputStream(socket.getOutputStream());
             System.out.println("aceitou conexão!");
             
             // receive request
             nBytes = buffIn.read(input, 0, MAX_SIZE_IN);
             request = new String(input, 0, nBytes);
+            // this.search(request);
             System.out.println("in: " + request);
             
             // respond to request
-            //output = search(request);
             
             music = new FileInputStream(System.getProperty("user.dir") + System.getProperty("file.separator") + "dmc.mp3");
-            music.read(output, 0, MAX_SIZE_OUT);
-            request = new String(output);
-            objOut.writeBytes(request);
+            nBytes = music.read(output, 0, MAX_SIZE_OUT);
+            
+            
+            //answer
+            // send size in bytes of the music to be read
+            size = String.valueOf(nBytes).getBytes();
+            buffOut.write(size, 0, size.length);
+            buffOut.flush();
+            
+            // send music
+            objOut.write(output, 0, nBytes);
             objOut.flush();
-            music.close();
+            
             System.out.println("finished");
-        }
+            
+            music.close();
+        //}
     }
 
     public byte[] search(String music) {
