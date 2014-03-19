@@ -23,7 +23,7 @@ public class Model {
         String keyboard = "";
         Client client = new Client();
         client.connect("localhost");
-        client.request("teste cliente");
+        client.request("angra.mp3");
         //System.exit(0);
         
         while(true){
