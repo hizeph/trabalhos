@@ -10,6 +10,7 @@
  */
 
 import java.net.Socket;
+import java.io.ObjectInputStream;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -17,13 +18,19 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.io.FileOutputStream;
 
 public class Client {
     
     private Socket socket;
     private InetAddress ip;
-    private BufferedInputStream in;
-    private BufferedOutputStream out;
+    private ObjectInputStream objIn;
+    private BufferedOutputStream buffOut;
+    private BufferedInputStream buffIn;
+    private final int MAX_SIZE_OUT = 512;
+    private final int MAX_SIZE_IN = 8338608;
+    private byte[] input, output;
+    private FileOutputStream music;
     
     public Client(){}
     
@@ -34,18 +41,41 @@ public class Client {
             return 0;
         }
         socket = new Socket(ip,2020);
+        
+        objIn = new ObjectInputStream(socket.getInputStream());
+        buffOut = new BufferedOutputStream(socket.getOutputStream());
+        buffIn = new BufferedInputStream(socket.getInputStream());
+        
+        input = new byte[MAX_SIZE_IN];
+        output = new byte[MAX_SIZE_OUT];
+        
         return 1;
     }
     
     public void disconnect() throws IOException{
         socket.close();
+        music.close();
     }
     
-    public int requestSearch(String name){
-        return 1;
-    }
-    
-    public int requestDeliver(String name){
+    public int request(String name) throws IOException{
+        // send request
+        output = name.getBytes();
+        buffOut.write(output, 0, output.length);
+        buffOut.flush();
+        
+        // wait for answer
+        int nBytes;
+        nBytes = buffIn.read(input, 0, 128);
+        String s = new String(input,0,nBytes);
+
+        nBytes = Integer.parseInt(s);
+
+          
+        objIn.readFully(input, 0, nBytes);
+        
+        music = new FileOutputStream(System.getProperty("user.dir") + System.getProperty("file.separator") + "music.mp3");
+        music.write(input, 0, nBytes);
+        System.out.println("complete");
         return 1;
     }
 }

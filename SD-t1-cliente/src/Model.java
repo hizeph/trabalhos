@@ -24,7 +24,7 @@ public class Model {
         Client client = new Client();
         client.connect("localhost");
         client.request("teste cliente");
-        System.exit(0);
+        //System.exit(0);
         
         while(true){
             keyboard = scan.next();
@@ -37,6 +37,7 @@ public class Model {
                case "close":
                     // close socket and quit client
                     client.disconnect();
+                    System.exit(0);
                     break;
             }
         }
