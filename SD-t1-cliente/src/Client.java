@@ -55,7 +55,6 @@ public class Client {
 
     public void disconnect() throws IOException {
         socket.close();
-        music.close();
     }
 
     public void request(String name) throws IOException {
@@ -72,8 +71,7 @@ public class Client {
             this.receive(name);
         } else {
             System.out.println("> File not found on server");
-        }
-        
+        } 
     }
     
     public void receive(String name) throws IOException{
@@ -82,6 +80,7 @@ public class Client {
 
         music = new FileOutputStream(System.getProperty("user.dir") + System.getProperty("file.separator") + "received" + System.getProperty("file.separator") + name);
         music.write(input, 0, nBytes);
+        music.close();
         System.out.println("> Received");
     }
 }

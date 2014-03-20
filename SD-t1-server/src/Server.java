@@ -16,8 +16,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Server {
 
@@ -41,22 +39,28 @@ public class Server {
         output = new byte[MAX_SIZE_OUT];
         String request;
         while (true) {
-
+            System.out.println("> Waiting for new client connection");
             socket = serverSocket.accept();
+            
             buffIn = new BufferedInputStream(socket.getInputStream());
             objOut = new ObjectOutputStream(socket.getOutputStream());
             buffOut = new BufferedOutputStream(socket.getOutputStream());
             System.out.println("> Connection Stablished");
+            while(socket.isConnected()){
+                // receive request
+                System.out.println("> Waiting for request...");
+                nBytes = buffIn.read(input, 0, MAX_SIZE_IN);
+                if (nBytes < 0){
+                    System.out.println("> Connection closed by client");
+                    break;
+                }
+                request = new String(input, 0, nBytes);
+                System.out.println("request: "+ request);
 
-            // receive request
-            System.out.println("> Waiting for request...");
-            nBytes = buffIn.read(input, 0, MAX_SIZE_IN);
-            request = new String(input, 0, nBytes);
+                this.search(request);
 
-            this.search(request);
-
-            this.deliver();
-
+                this.deliver();
+            }
         }
     }
 

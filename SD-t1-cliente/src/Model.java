@@ -21,18 +21,21 @@ public class Model {
     public static void main(String[] args) throws IOException {
         Scanner scan = new Scanner(System.in);
         String keyboard = "";
+        String s[] = new String[2];
         Client client = new Client();
+        //System.out.println("Enter server IP:");
+        //keyboard = scan.next();
+        //client.connect(keyboard);
         client.connect("localhost");
-        client.request("angra.mp3");
-        //System.exit(0);
+        //client.request("angra.mp3");
         
         while(true){
-            keyboard = scan.next();
-            switch(keyboard){
+            keyboard = scan.nextLine();
+            s = keyboard.split(" ");
+            switch(s[0]){
                 case "request":
                     // request music from server
-                    keyboard = scan.next();
-                    client.request(keyboard);
+                    client.request(s[1]+".mp3");
                     break;
                case "close":
                     // close socket and quit client
