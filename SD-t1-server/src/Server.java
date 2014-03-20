@@ -85,7 +85,6 @@ public class Server {
             objOut.write(output, 0, nBytes);
             objOut.flush();
         }
-        music.close();
         System.out.println("> Request complete");
     }
 
