@@ -57,7 +57,6 @@ public class Server {
 
             this.deliver();
 
-            music.close();
         }
     }
 
@@ -66,6 +65,7 @@ public class Server {
             // look in database
             music = new FileInputStream(System.getProperty("user.dir") + System.getProperty("file.separator") + "music" + System.getProperty("file.separator") + request);
             nBytes = music.read(output, 0, MAX_SIZE_OUT);
+            music.close();
         } catch (FileNotFoundException ex) {
             System.out.println("> Client request not found");
             nBytes = -1;
@@ -85,6 +85,7 @@ public class Server {
             objOut.write(output, 0, nBytes);
             objOut.flush();
         }
+        music.close();
         System.out.println("> Request complete");
     }
 
