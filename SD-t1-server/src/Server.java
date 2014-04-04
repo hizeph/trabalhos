@@ -27,6 +27,7 @@ public class Server {
     private byte[] input, output, outputSize;
     private FileInputStream music;
     private int nBytes;
+    private String databasePath;
 
     public Server() throws IOException {
         serverSocket = new ServerSocket(2020);
@@ -36,9 +37,11 @@ public class Server {
         input = new byte[MAX_SIZE_IN];
         output = new byte[MAX_SIZE_OUT];
         String request;
+        databasePath = System.getProperty("user.dir") + System.getProperty("file.separator");
+        System.out.println("Server IP/mask:port : " + serverSocket.getLocalSocketAddress());
+        System.out.println("Database Path: " + databasePath+"\n");
         while (true) {
-            System.out.println("Server IP: "+serverSocket.getInetAddress().getHostAddress());
-            System.out.println("Server port: "+serverSocket.getLocalPort());
+            
             System.out.println("> Waiting for new client connection");
             socket = serverSocket.accept();
 
@@ -46,20 +49,25 @@ public class Server {
             objOut = new ObjectOutputStream(socket.getOutputStream());
             buffOut = new BufferedOutputStream(socket.getOutputStream());
             System.out.println("> Connection Stablished");
-            while (socket.isConnected()) {
+            while (true) {
                 // receive request
                 System.out.println("> Waiting for request...");
-                nBytes = buffIn.read(input, 0, MAX_SIZE_IN);
-                if (nBytes < 0) {
-                    System.out.println("> Connection closed by client");
+                try {
+                    nBytes = buffIn.read(input, 0, MAX_SIZE_IN);
+                    if (nBytes < 0) {
+                        System.out.println("!> Connection closed by client");
+                        break;
+                    }
+                    request = new String(input, 0, nBytes);
+                    System.out.println("request: " + request);
+
+                    this.search(request);
+
+                    this.deliver();
+                } catch (java.net.SocketException ex) {
+                    System.out.println("!> Connection reset");
                     break;
                 }
-                request = new String(input, 0, nBytes);
-                System.out.println("request: " + request);
-
-                this.search(request);
-
-                this.deliver();
             }
         }
     }
@@ -68,13 +76,13 @@ public class Server {
         try {
             output = new byte[MAX_SIZE_OUT];
             // look in database
-            music = new FileInputStream(System.getProperty("user.dir") + System.getProperty("file.separator") + request);
+            music = new FileInputStream(databasePath + request);
             nBytes = music.read(output, 0, MAX_SIZE_OUT);
             message = new Message(output, nBytes, request);
             music.close();
         } catch (FileNotFoundException ex) {
             message = new Message();
-            System.out.println("> Request not found");
+            System.out.println("!> Request not found");
         }
     }
 
@@ -84,7 +92,7 @@ public class Server {
             objOut.writeObject(message);
             System.out.println("> Request complete");
         } catch (IOException ex) {
-            System.out.println("> Deliver failed");
+            System.out.println("!> Deliver failed");
             ex.printStackTrace();
         }
     }

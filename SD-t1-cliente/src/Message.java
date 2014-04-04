@@ -1,7 +1,5 @@
 
 import java.io.Serializable;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 /**
  *
@@ -13,7 +11,6 @@ public class Message implements Serializable {
     private byte[] musicBytes;
     private final int MAX_SIZE = 8338608;
     private String name;
-    private FileOutputStream out;
     private boolean valid = false;
 
     public Message() {
@@ -31,16 +28,17 @@ public class Message implements Serializable {
     public boolean isValid() {
         return valid;
     }
-
-    public void saveMusic() {
-        try {
-            String path = System.getProperty("user.dir") + System.getProperty("file.separator") + name;
-            out = new FileOutputStream(path);
-            out.write(musicBytes, 0, size);
-            out.close();
-            System.out.println("> Received " + size + " bytes. Saved on: "+path);
-        } catch (IOException ex) {
-            System.out.println("> Message.getMusic Failed");
-        }
+    
+    public String getName() {
+        return name;
     }
+
+    public int getSize() {
+        return size;
+    }
+
+    public byte[] getMusicBytes() {
+        return musicBytes;
+    }
+
 }

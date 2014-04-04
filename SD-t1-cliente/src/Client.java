@@ -1,17 +1,15 @@
+
 /**
  *
  * @author Cezar Bernardi
  */
 import java.net.Socket;
 import java.io.ObjectInputStream;
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.io.FileOutputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Client {
 
@@ -20,7 +18,6 @@ public class Client {
     private InetAddress ip;
     private ObjectInputStream objIn;
     private BufferedOutputStream buffOut;
-    private BufferedInputStream buffIn;
     private final int MAX_SIZE_OUT = 512;
     private final int MAX_SIZE_IN = 8338608;
     private byte[] input, output;
@@ -39,17 +36,16 @@ public class Client {
             }
             socket = new Socket(ip, 2020);
             System.out.println("> Connection Stablished");
-            
+
             objIn = new ObjectInputStream(socket.getInputStream());
             buffOut = new BufferedOutputStream(socket.getOutputStream());
-            buffIn = new BufferedInputStream(socket.getInputStream());
-            
+
             input = new byte[MAX_SIZE_IN];
             output = new byte[MAX_SIZE_OUT];
-            
+
             return true;
         } catch (IOException ex) {
-            System.out.println("> Connection Failed");
+            System.out.println("!> Connection Failed");
             return false;
         }
     }
@@ -67,18 +63,31 @@ public class Client {
         // wait for answer
         this.receive();
     }
-    
-    public void receive() throws ClassNotFoundException{
+
+    public void receive() throws ClassNotFoundException {
         message = new Message();
         try {
             message = (Message) objIn.readObject();
-            if (message.isValid()){
-                message.saveMusic();
+            if (message.isValid()) {
+                saveMusic();
+                System.out.println("> Received " + message.getSize() + " bytes.");
             } else {
-                System.out.println("> Request not found on server");
+                System.out.println("!> Request not found on server");
             }
         } catch (IOException ex) {
-            System.out.println("> Receive Failed");
+            System.out.println("!> Receive Failed");
+        }
+    }
+
+    public void saveMusic() {
+        try {
+            String path = System.getProperty("user.dir") + System.getProperty("file.separator") + message.getName();
+            music = new FileOutputStream(path);
+            music.write(message.getMusicBytes(), 0, message.getSize());
+            music.close();
+            System.out.println("Saved on: " + path);
+        } catch (IOException ex) {
+            System.out.println("!> Failed to write on disk");
         }
     }
 }
