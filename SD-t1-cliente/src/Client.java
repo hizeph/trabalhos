@@ -1,12 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /**
  *
- * @author Hizeph
+ * @author Cezar Bernardi
  */
 import java.net.Socket;
 import java.io.ObjectInputStream;
@@ -16,9 +10,12 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.io.FileOutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Client {
 
+    private Message message;
     private Socket socket;
     private InetAddress ip;
     private ObjectInputStream objIn;
@@ -33,52 +30,55 @@ public class Client {
     public Client() {
     }
 
-    public int connect(String hostname) throws IOException {
+    public boolean connect(String hostname) {
         try {
-            ip = InetAddress.getByName(hostname);
-        } catch (UnknownHostException ex) {
-            return 0;
+            try {
+                ip = InetAddress.getByName(hostname);
+            } catch (UnknownHostException ex) {
+                return false;
+            }
+            socket = new Socket(ip, 2020);
+            System.out.println("> Connection Stablished");
+            
+            objIn = new ObjectInputStream(socket.getInputStream());
+            buffOut = new BufferedOutputStream(socket.getOutputStream());
+            buffIn = new BufferedInputStream(socket.getInputStream());
+            
+            input = new byte[MAX_SIZE_IN];
+            output = new byte[MAX_SIZE_OUT];
+            
+            return true;
+        } catch (IOException ex) {
+            System.out.println("> Connection Failed");
+            return false;
         }
-        socket = new Socket(ip, 2020);
-
-        objIn = new ObjectInputStream(socket.getInputStream());
-        buffOut = new BufferedOutputStream(socket.getOutputStream());
-        buffIn = new BufferedInputStream(socket.getInputStream());
-
-        input = new byte[MAX_SIZE_IN];
-        output = new byte[MAX_SIZE_OUT];
-
-        return 1;
     }
 
     public void disconnect() throws IOException {
         socket.close();
     }
 
-    public void request(String name) throws IOException {
+    public void request(String name) throws IOException, ClassNotFoundException {
         // send request
         output = name.getBytes();
         buffOut.write(output, 0, output.length);
         buffOut.flush();
 
         // wait for answer
-        nBytes = buffIn.read(input, 0, 128);
-        String s = new String(input, 0, nBytes);
-        nBytes = Integer.parseInt(s);
-        if (nBytes > 0){
-            this.receive(name);
-        } else {
-            System.out.println("> File not found on server");
-        } 
+        this.receive();
     }
     
-    public void receive(String name) throws IOException{
-        
-        objIn.readFully(input, 0, nBytes);
-
-        music = new FileOutputStream(System.getProperty("user.dir") + System.getProperty("file.separator") + "received" + System.getProperty("file.separator") + name);
-        music.write(input, 0, nBytes);
-        music.close();
-        System.out.println("> Received");
+    public void receive() throws ClassNotFoundException{
+        message = new Message();
+        try {
+            message = (Message) objIn.readObject();
+            if (message.isValid()){
+                message.saveMusic();
+            } else {
+                System.out.println("> Request not found on server");
+            }
+        } catch (IOException ex) {
+            System.out.println("> Receive Failed");
+        }
     }
 }

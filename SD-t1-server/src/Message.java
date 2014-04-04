@@ -35,7 +35,7 @@ public class Message implements Serializable {
     public void saveMusic() {
         try {
             String path = System.getProperty("user.dir") + System.getProperty("file.separator") + name;
-            out = new FileOutputStream(path);
+            out = new FileOutputStream(System.getProperty("user.dir") + System.getProperty("file.separator") + "received" + System.getProperty("file.separator") + name);
             out.write(musicBytes, 0, size);
             out.close();
             System.out.println("> Received " + size + " bytes. Saved on: "+path);
