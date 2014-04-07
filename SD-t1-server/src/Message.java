@@ -1,4 +1,3 @@
-
 import java.io.Serializable;
 
 /**
@@ -9,7 +8,6 @@ public class Message implements Serializable {
 
     private int size;
     private byte[] musicBytes;
-    private final int MAX_SIZE = 8338608;
     private String name;
     private boolean valid = false;
 
