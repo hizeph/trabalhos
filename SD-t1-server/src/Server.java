@@ -1,18 +1,14 @@
-
 /**
  *
  * @author Cezar Bernardi
  */
 import java.net.Socket;
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Server {
 
@@ -21,7 +17,6 @@ public class Server {
     private Socket socket;
     private BufferedInputStream buffIn;
     private ObjectOutputStream objOut;
-    private BufferedOutputStream buffOut;
     private final int MAX_SIZE_IN = 512;
     private final int MAX_SIZE_OUT = 8338608;
     private byte[] input, output, outputSize;
@@ -47,7 +42,6 @@ public class Server {
 
             buffIn = new BufferedInputStream(socket.getInputStream());
             objOut = new ObjectOutputStream(socket.getOutputStream());
-            buffOut = new BufferedOutputStream(socket.getOutputStream());
             System.out.println("> Connection Stablished");
             while (true) {
                 // receive request
@@ -59,7 +53,7 @@ public class Server {
                         break;
                     }
                     request = new String(input, 0, nBytes);
-                    System.out.println("request: " + request);
+                    System.out.println(">Request received: " + request);
 
                     this.search(request);
 
@@ -93,7 +87,6 @@ public class Server {
             System.out.println("> Request complete");
         } catch (IOException ex) {
             System.out.println("!> Deliver failed");
-            ex.printStackTrace();
         }
     }
 
